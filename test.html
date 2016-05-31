@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Test Micro Service for Routing</title>
+  <meta name="description" content="Test Micro Service for Routing">
+  <meta name="author" content="Leonardo Larrea">
+</head>
+
+<body>
+<h4>Test Micro Service for Routing..</h4>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript"/>
+	<script src="routing.js" type="text/javascript"/>
+	<script type="text/javascript" >
+	    console.log('Routing');
+	    new RoutingService().getInfoBase(function (response) {
+	    	console.log(response);
+	    });
+	</script>
+</body>
+</html>
