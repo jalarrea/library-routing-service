@@ -1,19 +1,22 @@
-var RoutingService = function() {
-	this.url="http://routing.shippify.co";
+var url="http://routing.shippify.co";
+var RoutingService = function() {	
 	this.getInfoBase = function( onResponse ) {
-		console.log('getInfoBase');
 		includeJQueryIfNeeded(function(){
 			sendRequest(url,'/info','GET',onResponse);
 		});
-    },
+    };
     this.getRoute = function( waypoints, optimize, onResponse ) {
     	includeJQueryIfNeeded(function(){
 			sendRequest(url,buildRouteUrl(waypoints,optimize),'GET',function(response){
-				routeDone(response, waypoints, onResponse);
+				//console.log(response);
+				onResponse(response);
+				//routeDone(response, waypoints, onResponse);
 			});
 		});
-    }
-};
+    };
+}
+
+window.RoutingService = RoutingService;
 
 //Utils functions.
 
@@ -105,22 +108,15 @@ function includeJQueryIfNeeded(onSuccess) {
 			}
 		});
 	} else {
-		console.log("Ready");
 		onSuccess();
 	}
-};
+}
 
 function sendRequest(host,path,verb,onResponse){
 
-
 	$.ajax({
-		method: verb,
+		type: verb,
 		url: host + path,
-		/*
-			TODO: This must be with basic auth.
-			beforeSend: function (xhr) {
-			xhr.setRequestHeader("Authorization", "Basic " + btoa(json.api_id + ":" + json.api_token));
-		},*/
 		success: function (response) {
 			onResponse(response);
 		},
@@ -129,6 +125,5 @@ function sendRequest(host,path,verb,onResponse){
 			onResponse(new Error('The service is currently unavailable'));
 		}
 	});
-};
+}
 
-window.RoutingService = RoutingService;

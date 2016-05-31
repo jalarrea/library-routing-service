@@ -6,16 +6,37 @@
   <meta name="description" content="Test Micro Service for Routing">
   <meta name="author" content="Leonardo Larrea">
 </head>
-
 <body>
-<h4>Test Micro Service for Routing..</h4>
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript"/>
-	<script src="routing.js" type="text/javascript"/>
+	<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/default.min.css">
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/highlight.min.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript" ></script>
+	<script src="routing.js" type="text/javascript" ></script>
 	<script type="text/javascript" >
-	    console.log('Routing');
+
+		//Basic request to only information of the service
 	    new RoutingService().getInfoBase(function (response) {
-	    	console.log(response);
+	    	var json=JSON.stringify(response, null, 4);
+            $('#basic').append(json);
+	    });
+
+	    var waypoints=[];
+		waypoints.push({
+			lat:-2.156012,
+			lng:-79.9692138
+		});
+		waypoints.push({
+			lat:-2.1481458,
+			lng:-79.9644885
+		});
+ 		new RoutingService().getRoute(waypoints, true,function (response) {
+	    	var json=JSON.stringify(response, null, 4);
+            $('#routing').append(json);
 	    });
 	</script>
+	<h3>Basic Information </h3>
+	<pre style="width: 400px; " ><code id="basic" class="json"></code></pre>
+	<h3>Routing Service </h3>
+	<pre style="width: 400px;" ><code id="routing" class="json"></code></pre>
 </body>
 </html>
