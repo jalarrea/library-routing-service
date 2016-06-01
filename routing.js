@@ -8,9 +8,9 @@ var RoutingService = function() {
     this.getRoute = function( waypoints, optimize, onResponse ) {
     	includeJQueryIfNeeded(function(){
 			sendRequest(url,buildRouteUrl(waypoints,optimize),'GET',function(response){
-				//console.log(response);
-				onResponse(response);
-				//routeDone(response, waypoints, onResponse);
+				console.log(response);
+				//onResponse(response);
+				routeDone(response, waypoints, onResponse);
 			});
 		});
     };
@@ -47,7 +47,7 @@ function routeDone(response, inputWaypoints, callback) {
 		path = response.paths[i];
 
 		alts.push({
-			name: '',
+			name: 'Shippify.Inc',
 			summary: {
 				totalDistance: path.distance,
 				totalTime: path.time / 1000,
