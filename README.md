@@ -17,9 +17,13 @@ You can add a array of waypoints like these and call to the service of this way:
 			lat:-2.1481458,
 			lng:-79.9644885
 		});
-		new RoutingService().getRoute(waypoints, true,function (response) {
-		    var json=JSON.stringify(response, null, 4);
-		    $('#routing').append(json);
+		new RoutingService().getRoute(waypoints, true,function (error,response) {
+			if(error){
+				var json=JSON.stringify(error, null, 4);
+				$('#routing').append(json);
+			}
+			var json=JSON.stringify(response, null, 4);
+			$('#routing').append(json);
 		});
 </script>
 ```
