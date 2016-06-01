@@ -7,9 +7,11 @@ var RoutingService = function() {
     };
     this.getRoute = function( waypoints, optimize, onResponse ) {
     	includeJQueryIfNeeded(function(){
-			sendRequest(url,buildRouteUrl(waypoints,optimize),'GET',function(response){
+			sendRequest(url,buildRouteUrl(waypoints,optimize),'GET',function(error,response){
 				console.log(response);
-				//onResponse(response);
+				if(error){
+					return onResponse(error);
+				}
 				routeDone(response, waypoints, onResponse);
 			});
 		});
@@ -46,14 +48,21 @@ function routeDone(response, inputWaypoints, callback) {
 	for (i = 0; i < response.paths.length; i++) {
 		path = response.paths[i];
 
+		var coordinates=path.points.coordinates.map(function(point){
+			return {
+				lat:point[1],
+				lng:point[0]
+			}
+		});
+
 		alts.push({
-			name: 'Shippify.Inc',
 			summary: {
 				totalDistance: path.distance,
 				totalTime: path.time / 1000,
 			},
 			inputWaypoints: inputWaypoints,
-			points: path.points
+			points: coordinates,
+			service: 'Shippify.Inc'
 		});
 	}
 
@@ -74,7 +83,7 @@ function buildRouteUrl(waypoints,optimize) {
 
 	baseUrl =  '/route'+ '?' +
 		locs.join('&');
-	baseUrl +='&instructions=false&optimize='+optimize+'&points_encoded=false&type=json&calc_points=true';
+	baseUrl +='&instructions=false&optimize='+optimize+'&points_encoded=false&type=json&calc_points=true&debug=true&elevation=true';
 
 	return baseUrl;
 }
@@ -118,11 +127,14 @@ function sendRequest(host,path,verb,onResponse){
 		type: verb,
 		url: host + path,
 		success: function (response) {
-			onResponse(response);
+			return onResponse(null,response);
 		},
-		error: function (error) {
-			console.log(error);
-			onResponse(new Error('The service is currently unavailable'));
+		error: function (xhr, ajaxOptions, thrownError){
+			console.log(xhr);
+			return onResponse({
+				status: xhr.status,
+				message: thrownError
+		    });
 		}
 	});
 }

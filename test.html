@@ -15,12 +15,20 @@
 	<script type="text/javascript" >
 
 		//Basic request to only information of the service
-	    new RoutingService().getInfoBase(function (response) {
+	    new RoutingService().getInfoBase(function (error,response) {
+	    	if(error){
+ 				var json=JSON.stringify(error, null, 4);
+            	$('#routing').append(json);
+ 			}
 	    	var json=JSON.stringify(response, null, 4);
             $('#basic').append(json);
 	    });
 
 	    var waypoints=[];
+	    waypoints.push({
+			lat:-2.166012,
+			lng:-79.9792138
+		});
 		waypoints.push({
 			lat:-2.156012,
 			lng:-79.9692138
