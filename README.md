@@ -4,7 +4,7 @@ You only add this library
 <script src="routing.js" type="text/javascript" ></script>
 ```
 
-####How do work?
+####How to work?
 You can add a array of waypoints like these and call to the service of this way:
 ```html
 <script type="text/javascript" >
