@@ -7,48 +7,216 @@
   <meta name="author" content="Leonardo Larrea">
 </head>
 <body>
+
 	<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/default.min.css">
 	<script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/highlight.min.js"></script>
 	<script>hljs.initHighlightingOnLoad();</script>
+	<script src="http://maps.googleapis.com/maps/api/js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript" ></script>
 	<script src="routing.js" type="text/javascript" ></script>
 	<script type="text/javascript" >
 
 		//Basic request to only information of the service
-	    new RoutingService().getInfoBase(function (error,response) {
+	    var map;
+	    var index=0;
+	    var waypoints=[];
+	    var wayservice=[];
+
+
+	    var routePath=[];
+	    var interval=[];
+ 		
+
+	    function initialize() {
+		  var mapProp = {
+		    center:new google.maps.LatLng(-2.2073054,-79.9382544),
+		    zoom:14,
+		    mapTypeId:google.maps.MapTypeId.ROADMAP
+		  };
+		  map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
+		  map.addListener('click',function(event) {
+        	addMarker(event.latLng, 'Click Generated Marker', map);
+    	  });
+		}
+		google.maps.event.addDomListener(window, 'load', initialize);
+
+		
+
+		function addMarker(latlng,title,map) {
+			console.log(latlng)
+			var image = new google.maps.MarkerImage('./images/marker' + index + '.png',
+                      new google.maps.Size(20, 34),
+                      new google.maps.Point(0, 0),
+                      new google.maps.Point(10, 34));
+
+		    var marker = new google.maps.Marker({
+		            position: latlng,
+		            map: map,
+		            icon: image,
+		            title: title,
+		            draggable:true
+		    });
+		    index++;
+
+		    var waypoint={
+		    	lat:latlng.lat(),
+		    	lng:latlng.lng(),
+		    	index:index
+		    };
+		    waypoints.push(waypoint);
+
+		    marker.index=index;
+
+		    marker.addListener('drag',function(event) {
+		      //  document.getElementById('lat').value = event.latLng.lat();
+		      //  document.getElementById('lng').value = event.latLng.lng();
+		    });
+
+		    marker.addListener('dragend',function(event) {	
+		    	console.log(marker.index-1)
+		       waypoints[marker.index-1].lat=event.latLng.lat();
+		       waypoints[marker.index-1].lng=event.latLng.lng();
+		       clearPath();
+		       calculate(waypoints);
+		    });
+
+		    if(index>1){
+		       clearPath();
+		       calculate(waypoints);
+		    }
+		}
+
+		function optimization(){
+			new RoutingService().getRouteOptimization(waypoints,function (error,response) {
+				if(error){
+					console.log(error)
+				}
+				console.log(response)
+				console.log('ROUTE:'+response.result.routes.length);
+				sortRoute(response.result.routes);
+			});
+		}
+
+		function sortRoute(routes){
+			var items=waypoints.map(function(waypoint,index){
+                       waypoint.index=index==0?"pickup":""+index;
+				return waypoint;
+			});
+
+			var sortedroutes=[];
+			for(var i=0;i<routes.length;i++){
+				var steps=routes[i].steps;
+				sortedroutes[i]=[];
+				for(var j=0;j<steps.length;j++){
+					for(var k=0;k<items.length;k++){
+						if(items[k].index==steps[j].task_id){
+							console.log('Step :'+steps[j].task_id);
+							sortedroutes[i].push(items[k]);
+						}
+					}	
+				}	
+			}	
+			clearPath();
+			sortedroutes.forEach(function(route){
+				console.log(route)
+                calculate(route);
+			});
+
+		}
+
+
+		function calculate(waypoints_cal){
+			
+			var items=waypoints_cal.map(function(waypoint){
+				delete waypoint.index;
+				return waypoint;
+			});
+
+			new RoutingService().getRoute(items, true,function (error,response) {
+	 			if(error){
+	 				var json=JSON.stringify(error, null, 4);
+	            	$('#routing').append(json);
+	 			}
+		    	var json=JSON.stringify(response, null, 4);
+		    	$('#routing').empty() 
+	            $('#routing').append(json);
+	            var colorarrow=getRandomColor();
+				var color=getRandomColor();
+
+				var lineSymbol = {
+				    path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+				    scale: 4,
+				    strokeColor: colorarrow
+				};
+
+	            var tmpPath = new google.maps.Polyline({
+				    path: response[0].points,
+				    geodesic: true,
+				    strokeColor: color,
+				    strokeOpacity: 1.0,
+				    strokeWeight: 2,
+				    icons: [{
+				      icon: lineSymbol,
+				      offset: '100%'
+				    }]
+				});
+				tmpPath.setMap(map);
+				animateCircle(tmpPath);
+				routePath.push(tmpPath);
+	    	});
+		}
+
+		function getRandomColor() {
+		    var letters = '0123456789ABCDEF'.split('');
+		    var color = '#';
+		    for (var i = 0; i < 6; i++ ) {
+		        color += letters[Math.floor(Math.random() * 16)];
+		    }
+		    return color;
+		}
+
+		function clearPath(){
+			routePath.forEach(function(path){
+				path.setMap(null);
+			});
+
+			interval.forEach(function(interval_id){
+				window.clearInterval(interval_id);
+			});
+		}
+
+		function animateCircle(line) {
+		    var count = 0;
+		    interval.push(window.setInterval(function() {
+		        count = (count + 1) % 50000;
+		        var icons = line.get('icons');
+		        icons[0].offset = (count / 4) + '%';
+		        line.set('icons', icons);
+		    }, 20));
+		}
+
+		new RoutingService().getInfoBase(function (error,response) {
 	    	if(error){
  				var json=JSON.stringify(error, null, 4);
             	$('#routing').append(json);
  			}
 	    	var json=JSON.stringify(response, null, 4);
             $('#basic').append(json);
+           
 	    });
 
-	    var waypoints=[];
-	    waypoints.push({
-			lat:-2.166012,
-			lng:-79.9792138
-		});
-		waypoints.push({
-			lat:-2.156012,
-			lng:-79.9692138
-		});
-		waypoints.push({
-			lat:-2.1481458,
-			lng:-79.9644885
-		});
- 		new RoutingService().getRoute(waypoints, true,function (error,response) {
- 			if(error){
- 				var json=JSON.stringify(error, null, 4);
-            	$('#routing').append(json);
- 			}
-	    	var json=JSON.stringify(response, null, 4);
-            $('#routing').append(json);
-	    });
+
 	</script>
-	<h3>Basic Information </h3>
-	<pre style="width: 400px; " ><code id="basic" class="json"></code></pre>
-	<h3>Routing Service </h3>
-	<pre style="width: 400px;" ><code id="routing" class="json"></code></pre>
+	<button onclick="optimization()" style="margin-left: 913px;">OPTIMIZATION</button>
+	<div id="googleMap" style="width:1024px;height:700px;"></div>
+	<div id="information">
+		<h3>Routing Service </h3>
+		<pre style="width: 400px;" ><code id="routing" class="json"></code></pre>
+		<h3>Basic Information </h3>
+		<pre style="width: 400px; " ><code id="basic" class="json"></code></pre>
+    </div>
+	
+
+
 </body>
 </html>

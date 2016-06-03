@@ -2,17 +2,60 @@ var url="http://routing.shippify.co";
 var RoutingService = function() {	
 	this.getInfoBase = function( onResponse ) {
 		includeJQueryIfNeeded(function(){
-			sendRequest(url,'/info','GET',onResponse);
+			sendRequest(url,'/info','GET',undefined,onResponse);
 		});
     };
     this.getRoute = function( waypoints, optimize, onResponse ) {
     	includeJQueryIfNeeded(function(){
-			sendRequest(url,buildRouteUrl(waypoints,optimize),'GET',function(error,response){
+			sendRequest(url,buildRouteUrl(waypoints,optimize),'GET',undefined,function(error,response){
 				console.log(response);
 				if(error){
 					return onResponse(error);
 				}
 				routeDone(response, waypoints, onResponse);
+			});
+		});
+    };
+
+    this.getRouteOptimization = function(waypoints,onResponse) {
+
+    	var body={
+  			problem_type: {
+        		fleet_size:"FINITE",
+        		fleet_composition:"HOMOGENEOUS",
+        		fleet_size_simulate:100,
+        		fleet_types_vehicles:["Car"],
+        		fleet_capacities_simulate:[100],
+        		fleet_cost_by_meter:[1],
+        		algorithm_iterations:100
+  			}
+		};
+
+
+
+		body.services = waypoints.map(function(waypoint, index){
+							return {
+								id:index==0?"pickup":""+index,
+								size_index:"0",
+						        size_value:"2",
+						        coord:{
+					                lat:waypoint.lat,
+					                lng:waypoint.lng
+				        		}
+							};
+						});
+
+		console.log(body)
+
+    	includeJQueryIfNeeded(function(){
+			sendRequest(url,"/optimization",'POST',JSON.stringify(body),function(error,response){
+				console.log(response);
+				if(error){
+					return onResponse(error);
+				}
+
+				 onResponse(null,response);
+				//routeDone(response, waypoints, onResponse);
 			});
 		});
     };
@@ -27,7 +70,7 @@ function routeDone(response, inputWaypoints, callback) {
 	    mappedWaypoints,
 	    coordinates,
 	    i,
-	    path;
+	    path,distances,times;
 	if(response.hints instanceof Array&&response.hints.length>0){
 		
 		return callback({
@@ -44,29 +87,52 @@ function routeDone(response, inputWaypoints, callback) {
 		});
 		
 	}
+	console.log('Distances');
 
-	for (i = 0; i < response.paths.length; i++) {
+	for (var i = 0; i < response.paths.length; i++) {
 		path = response.paths[i];
+		var distances_pre = path.instructions;
+		var sum=0;
+		var sum1=0;
+		distances=[];
+		times=[];
+		for(var d=0;d<distances_pre.length;d++){
+			if(distances_pre[d].sign==5||distances_pre[d].sign==4){
+				sum=sum/1000; //Kilometers
+				sum1=sum1/1000; //Seconds
+				distances.push(sum);
+				times.push(sum1);
+				sum1=0;
+				sum=0;
+			}else{
+				sum+=distances_pre[d].distance;
+				sum1+=distances_pre[d].time;
+			}
+		}
 
 		var coordinates=path.points.coordinates.map(function(point){
 			return {
 				lat:point[1],
 				lng:point[0]
-			}
+			};
 		});
 
 		alts.push({
 			summary: {
-				totalDistance: path.distance,
+				totalDistance: path.distance/1000,
 				totalTime: path.time / 1000,
 			},
 			inputWaypoints: inputWaypoints,
+			distances:distances,
+			times:times,
 			points: coordinates,
 			service: 'Shippify.Inc'
 		});
+
+		console.log(path.distance)
 	}
 
-	callback(null, alts);
+	return callback(null, alts);
 }
 
 function buildRouteUrl(waypoints,optimize) {
@@ -83,7 +149,7 @@ function buildRouteUrl(waypoints,optimize) {
 
 	baseUrl =  '/route'+ '?' +
 		locs.join('&');
-	baseUrl +='&instructions=false&optimize='+optimize+'&points_encoded=false&type=json&calc_points=true&debug=true&elevation=true';
+	baseUrl +='&instructions=true&optimize=true&points_encoded=false&type=json&weighting=fastest&out_array=weights&out_array=times&out_array=distances&alternative_route.max_paths=10&ch.disable=true';
 
 	return baseUrl;
 }
@@ -121,12 +187,14 @@ function includeJQueryIfNeeded(onSuccess) {
 	}
 }
 
-function sendRequest(host,path,verb,onResponse){
+function sendRequest(host,path,verb,body,onResponse){
 
-	$.ajax({
+	var ajax=$.ajax({
 		type: verb,
 		url: host + path,
-		success: function (response) {
+		data: body,
+		dataType: 'json',
+		success: function (response, textStatus, jqXHR) {
 			return onResponse(null,response);
 		},
 		error: function (xhr, ajaxOptions, thrownError){
@@ -137,5 +205,9 @@ function sendRequest(host,path,verb,onResponse){
 		    });
 		}
 	});
+	console.log(ajax);
 }
+
+
+
 
