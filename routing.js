@@ -1,4 +1,5 @@
 var url="http://routing.shippify.co";
+var url_local="http://localhost"
 var RoutingService = function() {	
 	this.getInfoBase = function( onResponse ) {
 		includeJQueryIfNeeded(function(){
@@ -48,7 +49,8 @@ var RoutingService = function() {
 		console.log(body)
 
     	includeJQueryIfNeeded(function(){
-			sendRequest(url,"/optimization",'POST',JSON.stringify(body),function(error,response){
+    		//sendRequest(url,"/optimization",'POST',JSON.stringify(body),function(error,response){
+			sendRequest(url_local,"",'POST',JSON.stringify(body),function(error,response){
 				console.log(response);
 				if(error){
 					return onResponse(error);

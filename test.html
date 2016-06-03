@@ -2,18 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Test Micro Service for Routing</title>
-  <meta name="description" content="Test Micro Service for Routing">
+  <title>Testing Service for Routing</title>
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/datepicker3.css" rel="stylesheet">
+  <link href="css/styles.css" rel="stylesheet">
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/default.min.css">
+  <script src="js/lumino.glyphs.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/highlight.min.js"></script>
+  <script src="http://maps.googleapis.com/maps/api/js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript" ></script>
+  <script src="routing.js" type="text/javascript" ></script>
+  <meta name="description" content="Testing Service for Routing">
   <meta name="author" content="Leonardo Larrea">
 </head>
 <body>
-
-	<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/default.min.css">
-	<script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/highlight.min.js"></script>
 	<script>hljs.initHighlightingOnLoad();</script>
-	<script src="http://maps.googleapis.com/maps/api/js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript" ></script>
-	<script src="routing.js" type="text/javascript" ></script>
+	
 	<script type="text/javascript" >
 
 		//Basic request to only information of the service
@@ -207,15 +212,84 @@
 
 
 	</script>
-	<button onclick="optimization()" style="margin-left: 913px;">OPTIMIZATION</button>
-	<div id="googleMap" style="width:1024px;height:700px;"></div>
-	<div id="information">
-		<h3>Routing Service </h3>
-		<pre style="width: 400px;" ><code id="routing" class="json"></code></pre>
-		<h3>Basic Information </h3>
-		<pre style="width: 400px; " ><code id="basic" class="json"></code></pre>
-    </div>
 	
+	
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#sidebar-collapse">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#"><span>OPTIMIZATION</span>ROUTES</a>
+			</div>				
+		</div><!-- /.container-fluid -->
+	</nav>
+		
+	<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
+		<form role="search">
+			<div class="form-group">
+			      <label for="fleet_size">FLEET SIZE</label>
+			      <select id="fleet_size" class="form-control">
+			        <option>FINITE</option>
+			        <option>INFINITE</option>
+			      </select>
+			</div>
+			<div class="form-group">
+			      <label for="fleet_composition">FLEET COMPOSITION</label>
+			      <select id="fleet_composition" class="form-control">
+			        <option>HOMOGENEOUS</option>
+			        <option>HETEROGENEOUS</option>
+			      </select>
+			</div>
+			<div class="form-group">
+			    <label for="fleet_size_simulate">FLEET SIZE SIMULATE</label>
+                <input type="number" class="form-control" id="fleet_size_simulate" placeholder="10" value="10">
+			</div>
+			<div class="form-group">
+			    <label for="fleet_types_vehicles">FLEET TYPES VEHICLES</label>
+                <select id="fleet_composition" class="form-control">
+			        <option>CAR</option>
+			        <option>MOTORCYCLE</option>
+			        <option>FOOT</option>
+			    </select>
+			</div>
+			<div class="form-group">
+			    <label for="fleet_cost_by_meter">VEHICLE COST BY METER</label>
+                <input type="number" class="form-control" id="fleet_cost_by_meter" placeholder="10" value="1.0">
+			</div>
+			<div class="form-group">
+			    <label for="algorithm_iterations">ALGORITHM ITERATIONS</label>
+                <input type="number" class="form-control" id="algorithm_iterations" placeholder="10" value="10">
+			</div>
+		</form>
+		<form role="search">
+			<div class="form-group">
+				<button class="btn btn-success" type="button" style="width:100%;"onclick="optimization()">OPTIMIZATION</button>
+			</div>
+	    </form>
+		
+	</div><!--/.sidebar-->
+		
+	<div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main">			
+		
+		<div class="row">
+			<div id="googleMap" style="width:100%;height:700px;"></div>
+
+		</div><!--/.row-->
+		
+		<div class="row">
+				<div id="information" >
+					<h3>Routing Service </h3>
+					<pre style="width: 280px;height: 100%; overflow: scroll; background:rgba(0,0,0,0.5);" ><code id="routing" class="json"></code></pre>
+					<h3>Basic Information </h3>
+					<pre style="width: 280px; height: 100%; overflow: scroll; background:rgba(0,0,0,0.5);" ><code id="basic" class="json"></code></pre>
+		    	</div>
+		</div><!--/.row-->
+		
+	</div>	<!--/.main-->
 
 
 </body>
