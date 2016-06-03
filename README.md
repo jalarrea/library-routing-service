@@ -32,10 +32,14 @@ You can add a array of waypoints like these and call to the service of this way:
 Basic request to only information of the service
 ```html
 <script type="text/javascript" >
-      new RoutingService().getInfoBase(function (response) {
-          var json=JSON.stringify(response, null, 4);
-          $('#basic').append(json);
-      });
+       new RoutingService().getInfoBase(function (error,response) {
+       		if(error){
+       			var json=JSON.stringify(error, null, 4);
+       			$('#routing').append(json);
+       		}
+       		var json=JSON.stringify(response, null, 4);
+       		$('#basic').append(json);
+       	});
 </script>
 ```
 
