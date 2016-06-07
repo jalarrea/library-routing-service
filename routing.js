@@ -18,7 +18,7 @@ var RoutingService = function() {
 		});
     };
 
-    this.getRouteOptimization = function(waypoints,onResponse) {
+    this.getRouteOptimizationSingle = function(waypoints,onResponse) {
 
     	var body={
   			problem_type: {
@@ -50,7 +50,7 @@ var RoutingService = function() {
 
     	includeJQueryIfNeeded(function(){
     		//sendRequest(url,"/optimization",'POST',JSON.stringify(body),function(error,response){
-			sendRequest(url_local,"",'POST',JSON.stringify(body),function(error,response){
+			sendRequest(url_local,"/single",'POST',JSON.stringify(body),function(error,response){
 				console.log(response);
 				if(error){
 					return onResponse(error);
