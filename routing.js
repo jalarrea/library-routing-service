@@ -1,5 +1,4 @@
 var url="http://routing.shippify.co";
-var url_local="http://localhost"
 var RoutingService = function() {	
 	this.getInfoBase = function( onResponse ) {
 		includeJQueryIfNeeded(function(){
@@ -24,7 +23,7 @@ var RoutingService = function() {
   			problem_type: {
         		fleet_size:"FINITE",
         		fleet_composition:"HOMOGENEOUS",
-        		fleet_size_simulate:100,
+        		fleet_size_simulate:1,
         		fleet_types_vehicles:["Car"],
         		fleet_capacities_simulate:[100],
         		fleet_cost_by_meter:[1],
@@ -50,7 +49,7 @@ var RoutingService = function() {
 
     	includeJQueryIfNeeded(function(){
     		//sendRequest(url,"/optimization",'POST',JSON.stringify(body),function(error,response){
-			sendRequest(url_local,"/single",'POST',JSON.stringify(body),function(error,response){
+			sendRequestPostEspecial(url,"/optimization/single",'POST',JSON.stringify(body),function(error,response){
 				console.log(response);
 				if(error){
 					return onResponse(error);
@@ -191,7 +190,7 @@ function includeJQueryIfNeeded(onSuccess) {
 
 function sendRequest(host,path,verb,body,onResponse){
 
-	var ajax=$.ajax({
+	$.ajax({
 		type: verb,
 		url: host + path,
 		data: body,
@@ -207,7 +206,20 @@ function sendRequest(host,path,verb,body,onResponse){
 		    });
 		}
 	});
-	console.log(ajax);
+}
+
+function sendRequestPostEspecial(host,path,verb,body,onResponse){
+	$.post( host+path, body) 
+	.done(function( data ) {
+    	return onResponse(null,response);
+    })
+    .fail( function(xhr, textStatus, errorThrown) {
+        console.log(xhr);
+		return onResponse({
+			status: xhr.status,
+			message: errorThrown
+	    });
+    });
 }
 
 
