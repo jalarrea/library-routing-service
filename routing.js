@@ -1,4 +1,8 @@
 var url="http://routing.shippify.co";
+var url_local="http://localhost";
+
+axios.defaults.baseURL = url_local;
+axios.defaults.headers.post['Content-Type'] = 'application/json';
 var RoutingService = function() {	
 	this.getInfoBase = function( onResponse ) {
 		includeJQueryIfNeeded(function(){
@@ -57,6 +61,53 @@ var RoutingService = function() {
 
 				 onResponse(null,response);
 				//routeDone(response, waypoints, onResponse);
+			});
+		});
+    };
+
+    this.getRouteOptimizationMulti = function(tasks,onResponse) {
+
+    	var body={
+  			problem_type: {
+        		fleet_size:"FINITE",
+        		fleet_composition:"HOMOGENEOUS",
+        		fleet_size_simulate:1,
+        		fleet_types_vehicles:["Car"],
+        		fleet_capacities_simulate:[100],
+        		fleet_cost_by_meter:[1],
+        		algorithm_iterations:100
+  			}
+		};
+
+
+
+		body.shipments = tasks.map(function(task, index){
+							return {
+								id:task.id,
+								size_index:"0",
+						        size_value:"2",
+						        pickup_location:{
+						        	lat:task.pickup_location.lat,
+						        	lng:task.pickup_location.lng
+						        },
+						        delivery_location:{
+						        	lat:task.delivery_location.lat,
+						        	lng:task.delivery_location.lng
+						        }
+							};
+						});
+
+		console.log(JSON.stringify(body,null,4))
+
+    	includeJQueryIfNeeded(function(){
+    		//sendRequest(url,"/optimization",'POST',JSON.stringify(body),function(error,response){
+			sendRequestPostEspecial(url_local,"/multiple",'POST',body,function(error,response){
+				console.log(response);
+				if(error){
+					return onResponse(error);
+				}
+
+				 onResponse(null,response);
 			});
 		});
     };
@@ -209,7 +260,30 @@ function sendRequest(host,path,verb,body,onResponse){
 }
 
 function sendRequestPostEspecial(host,path,verb,body,onResponse){
-	$.post( host+path, body) 
+
+  axios.post(path, body)
+  .then(function (response) {
+    console.log(response);
+    return onResponse(null,response.data);
+  })
+  .catch(function (response) {
+    if (response instanceof Error) {
+      // Something happened in setting up the request that triggered an Error
+      console.log('Error', response.message);
+    } else {
+      // The request was made, but the server responded with a status code
+      // that falls out of the range of 2xx
+      console.log(response.data);
+      console.log(response.status);
+      console.log(response.headers);
+      console.log(response.config);
+      return onResponse({
+			status: response.status,
+			message:response.data
+	  });
+    }
+  });
+/*	$.post( host+path, body) 
 	.done(function( data ) {
     	return onResponse(null,response);
     })
@@ -219,7 +293,7 @@ function sendRequestPostEspecial(host,path,verb,body,onResponse){
 			status: xhr.status,
 			message: errorThrown
 	    });
-    });
+    });*/
 }
 
 

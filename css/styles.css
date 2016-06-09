@@ -992,6 +992,43 @@ h1.page-header {
     padding: 0px; 
   }
 
+  .map-info-window{
+   overflow:hidden;
+   position:absolute;
+  }
+ 
+  .map-info-window .map-info-close{
+   float:right;
+   cursor:pointer;
+  }
+
+  .map-info-window{
+   background:#333;
+   border-radius:4px;
+   box-shadow:8px 8px 16px #222;
+   color:#fff;
+   max-width:200px;
+   max-height:300px;
+   text-align:center;
+   padding:5px 20px 10px;
+   overflow:hidden;
+   position:absolute;
+   text-transform:uppercase;
+	}
+	.map-info-window .map-info-close{
+	   float:right;
+	   cursor:pointer;
+	   margin-right:-5px;
+	   margin-left:5px;
+	}
+	 
+	.map-info-window h5{
+	   font-weight:bold;
+	}
+	.map-info-window p{
+	   color:#939393;
+	}
+
 
 
 
