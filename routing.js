@@ -1,9 +1,9 @@
 var url="http://routing.shippify.co";
 var url_local="http://localhost";
 
-axios.defaults.baseURL = url_local;
+axios.defaults.baseURL = url;
 axios.defaults.headers.post['Content-Type'] = 'application/json';
-var RoutingService = function() {	
+var RoutingService = function() {
 	this.getInfoBase = function( onResponse ) {
 		includeJQueryIfNeeded(function(){
 			sendRequest(url,'/info','GET',undefined,onResponse);
@@ -52,8 +52,8 @@ var RoutingService = function() {
 		console.log(body)
 
     	includeJQueryIfNeeded(function(){
-    		//sendRequest(url,"/optimization",'POST',JSON.stringify(body),function(error,response){
-			sendRequestPostEspecial(url,"/optimization/single",'POST',JSON.stringify(body),function(error,response){
+    		sendRequest(url,"/optimization/single",'POST',JSON.stringify(body),function(error,response){
+			//sendRequestPostEspecial(url,"/optimization/single",'POST',JSON.stringify(body),function(error,response){
 				console.log(response);
 				if(error){
 					return onResponse(error);
@@ -101,7 +101,7 @@ var RoutingService = function() {
 
     	includeJQueryIfNeeded(function(){
     		//sendRequest(url,"/optimization",'POST',JSON.stringify(body),function(error,response){
-			sendRequestPostEspecial(url_local,"/multiple",'POST',body,function(error,response){
+			sendRequestPostEspecial(url,"/optimization/multiple",'POST',body,function(error,response){
 				console.log(response);
 				if(error){
 					return onResponse(error);
@@ -124,7 +124,7 @@ function routeDone(response, inputWaypoints, callback) {
 	    i,
 	    path,distances,times;
 	if(response.hints instanceof Array&&response.hints.length>0){
-		
+
 		return callback({
 			// TODO: include all errors
 			status: response.hints[0].details,
@@ -137,7 +137,7 @@ function routeDone(response, inputWaypoints, callback) {
 			status: response.info.errors[0].details,
 			message: response.pathsresponse.info.errors[0].message
 		});
-		
+
 	}
 	console.log('Distances');
 
@@ -194,7 +194,7 @@ function buildRouteUrl(waypoints,optimize) {
 	var locs = [],
 	i,
 	baseUrl;
-	
+
 	for (i = 0; i < waypoints.length; i++) {
 		locs.push('point=' + waypoints[i].lat + ',' + waypoints[i].lng);
 	}
@@ -283,7 +283,7 @@ function sendRequestPostEspecial(host,path,verb,body,onResponse){
 	  });
     }
   });
-/*	$.post( host+path, body) 
+/*	$.post( host+path, body)
 	.done(function( data ) {
     	return onResponse(null,response);
     })
@@ -295,7 +295,3 @@ function sendRequestPostEspecial(host,path,verb,body,onResponse){
 	    });
     });*/
 }
-
-
-
-
