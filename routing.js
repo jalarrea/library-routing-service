@@ -150,7 +150,7 @@ function routeDone(response, inputWaypoints, callback) {
 		times=[];
 		for(var d=0;d<distances_pre.length;d++){
 			if(distances_pre[d].sign==5||distances_pre[d].sign==4){
-				sum=sum/1000; //Kilometers
+				sum=sum; //Kilometers
 				sum1=sum1/1000; //Seconds
 				distances.push(sum);
 				times.push(sum1);
@@ -171,7 +171,7 @@ function routeDone(response, inputWaypoints, callback) {
 
 		alts.push({
 			summary: {
-				totalDistance: path.distance/1000,
+				totalDistance: path.distance,
 				totalTime: path.time / 1000,
 			},
 			inputWaypoints: inputWaypoints,
@@ -201,7 +201,7 @@ function buildRouteUrl(waypoints,optimize) {
 
 	baseUrl =  '/route'+ '?' +
 		locs.join('&');
-	baseUrl +='&instructions=true&optimize=true&points_encoded=false&type=json&weighting=fastest&out_array=weights&out_array=times&out_array=distances&alternative_route.max_paths=10&ch.disable=true';
+	baseUrl +='&instructions=true&optimize='+optimize+'&points_encoded=false&type=json&weighting=fastest';
 
 	return baseUrl;
 }

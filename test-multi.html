@@ -71,9 +71,10 @@
 		  map.addListener('click',function(event) {
         	addMarker(event.latLng, '', map);
     	  });
+          
 
     	    // Try HTML5 geolocation
-		  if(navigator.geolocation) {
+		  /*if(navigator.geolocation) {
 		    navigator.geolocation.getCurrentPosition(function(position) {
 		      var pos = new google.maps.LatLng(position.coords.latitude,
 		                                       position.coords.longitude);
@@ -84,7 +85,7 @@
 		  } else {
 		    // Browser doesn't support Geolocation
 		    handleNoGeolocation(false);
-		  }
+		  }*/
 
     	  var drawingManager = new google.maps.drawing.DrawingManager({
 		   drawingMode: null,
@@ -232,15 +233,13 @@
 
 			//var testDP=Math.floor(Math.random() * 2);
 
-			var taskidDefined='shippifytestid_'+indexTask;
+			var taskidDefined='task_test_task_'+indexTask;
 
-			var contentString = '<div id="content">'+
-                          '<div id="siteNotice">'+
-                          '</div>'+
-                          '<h5 id="firstHeading" class="firstHeading">'+(indexPD==0?'Pickup':'Delivery')+'</h3>'+
-                          '<p><b>Task ID: </b>'+taskidDefined+'.</p>'+
-                          '</div>';
-
+			var contentString = '<div class="content">'+
+	                       '<p><b>Task Id: </b>'+taskidDefined+'.</p>'+
+	                       '<p><b>Activity: </b>'+(indexPD==0?'Pickup':'Delivery')+'.</p>'+
+	                       '<p><b>Time Window: </b> N/A </p>'+
+                       '</div>';
 
 
             var infowindow = new google.maps.InfoWindow({
@@ -248,21 +247,43 @@
             });
 
 		    var marker = new google.maps.Marker({
+		    		activity:labelPD[indexPD],
+		    	    lat:latlng.lat(),
+		    	    lng:latlng.lng(),
+		    	    task_id:taskidDefined,
+		    	    index:index,
 		            position: latlng,
 		            map: map,
-		            label: labelPD[indexPD],
+	            	label: {
+	            		text:labelPD[indexPD].toUpperCase(),
+	            		color:'white',
+	            		fontFamily: 'Roboto, Arial, sans-serif',
+	            		fontSize:'18px',
+	            		fontWeight:'7px'
+		            },
 		            icon: {
 				        path: google.maps.SymbolPath.CIRCLE,
     					scale: 15,
     					fillColor:colorPD[indexPD],
-    					fillOpacity:0.7,
+    					fillOpacity:0.8,
     					strokeColor: '#FFF',
     					strokeWeight:5,
     					strokeOpacity:0.7
 				    },
+				    shadow:{
+				        path: google.maps.SymbolPath.CIRCLE,
+    					scale: 17,
+    					fillColor:'#444',
+    					fillOpacity:1,
+    					strokeColor: '#000',
+    					strokeWeight:8,
+    					strokeOpacity:1
+				    }, 
 		            title: title,
 		            draggable:true
 		    });
+
+
 
 
 		    var waypoint={
@@ -301,6 +322,8 @@
 		       }
 		      
 		    });
+
+
 
 		    index++;
 		    if(index>1){
@@ -372,6 +395,8 @@
 
 		function calculate(waypoints_cal,type){
 
+			console.log('waypoint:',waypoints_cal);
+
 			var items=waypoints_cal.map(function(waypoint){
 
 				return {
@@ -386,6 +411,7 @@
 	            	$('#routing').append(json);
 	 			}
 		    	var json=JSON.stringify(response, null, 4);
+		    	console.log(json);
 		    	$('#routing').empty()
 	            $('#routing').append(json);
 	            var colorarrow=getRandomColor();
@@ -406,27 +432,82 @@
 				    anchor: new google.maps.Point(10, 25)
 				};
 
-				
+				 var infowindow = new google.maps.InfoWindow({
+        			content: ""
+    			});	
 
 				if(type=='NORMAL'){
 
 		            var routeNormalTmpPath = new google.maps.Polyline({
+		            	distance : response[0].summary.totalDistance, 
+		            	time : response[0].summary.totalTime,
+	            	    taskId : waypoints_cal[0].task_id, 
 					    path: response[0].points,
 					    geodesic: true,
 					    fillColor:'#fff',
 	    				fillOpacity:1.0,
 					    strokeColor: color,
 					    strokeOpacity: 1.0,
-					    strokeWeight: 4,
+					    strokeWeight: 5,
+					    zIndex:10,
 					    icons: [{
 					      icon: carSymbol,
 					      offset: '5%'
 					    }]
 					});
+
+					var routeBackgroundTmpPath = new google.maps.Polyline({
+					    path: response[0].points,
+					    geodesic: true,
+					    fillColor:'#fff',
+	    				fillOpacity:1.0,
+					    strokeColor: '#fff',
+					    strokeOpacity: 1.0,
+					    strokeWeight: 7,
+					    zIndex:9
+					});
+
+					var routeBackgroundBorderTmpPath = new google.maps.Polyline({
+					    path: response[0].points,
+					    geodesic: true,
+					    fillColor:'#000',
+	    				fillOpacity:1.0,
+					    strokeColor: '#000',
+					    strokeOpacity: 0.7,
+					    strokeWeight: 8,
+					    zIndex:8
+					});
+
 					routeNormalTmpPath.setMap(map);
+					routeBackgroundTmpPath.setMap(map);
+					routeBackgroundBorderTmpPath.setMap(map);
+
+					google.maps.event.addListener(routeNormalTmpPath, "click", function (e) {
+					   var contentString = '<div class="content">'+
+	                       '<p><b>Task Id: </b>'+this.taskId+'.</p>'+
+	                       '<p><b>Distance: </b>'+this.distance+' mts.</p>'+
+	                       '<p><b>Approximate Time: </b>'+this.time+' s.</p>'+
+                       '</div>';
+					   infowindow.setPosition(e.latLng);
+					   infowindow.setContent(contentString); //you accidently 
+					   infowindow.open(map);
+					   var bounds = new google.maps.LatLngBounds();
+					   this.getPath().forEach(function(latLng){
+				    	  bounds.extend(latLng);
+				       });
+				       map.fitBounds(bounds);
+					});
+
+					google.maps.event.addListener(map, "click", function () {
+				        infowindow.close();
+				    });
                 
                 	animateCircle(routeNormalTmpPath);
                 	routePath.push(routeNormalTmpPath);
+                	routePath.push(routeBackgroundTmpPath);
+                	routePath.push(routeBackgroundBorderTmpPath);
+
+                	
                 }else{
                 	var lineSymbolDashed = {
 					    path: 'M 0,-1 0,1',
@@ -436,6 +517,9 @@
 				    };
 
 				    var routeOptiTmpPath = new google.maps.Polyline({
+				    	distance : response[0].summary.totalDistance, 
+		            	time : response[0].summary.totalTime,
+	            	    taskId : waypoints_cal[0].task_id,
 					    path: response[0].points,
 					    geodesic: true,
 					    fillColor:'#fff',
@@ -453,6 +537,16 @@
 	      					repeat: '20px'
 					    }]
 					});
+
+					var contentString = '<div class="content">'+
+					       '<p><b>ROUTE</b></p>'+
+	                       '<p><b>Task Id: </b>'+routeOptiTmpPath.taskId+'.</p>'+
+	                       '<p><b>Distance: </b>'+routeOptiTmpPath.distance+' mts.</p>'+
+	                       '<p><b>Approximate Time: </b>'+routeOptiTmpPath.time+' s.</p>'+
+                       '</div>';
+				    infowindow.setPosition(routeOptiTmpPath.getPath()[0]);
+				    infowindow.setContent(contentString); //you accidently 
+				    infowindow.open(map);
 
 					routeOptiTmpPath.setMap(map);
                 
