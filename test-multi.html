@@ -237,7 +237,7 @@
 
 			var contentString = '<div class="content">'+
 	                       '<p><b>Task Id: </b>'+taskidDefined+'.</p>'+
-	                       '<p><b>Activity: </b>'+(indexPD==0?'Pickup':'Delivery')+'.</p>'+
+	                       '<p><b>Activity: </b>'+(indexPD==0?'Pickup':'Delivery')+'</p>'+
 	                       '<p><b>Time Window: </b> N/A </p>'+
                        '</div>';
 
@@ -279,8 +279,8 @@
     					strokeWeight:8,
     					strokeOpacity:1
 				    }, 
-		            title: title,
-		            draggable:true
+		            title: title//,
+		           // draggable:true
 		    });
 
 
@@ -428,7 +428,6 @@
 				    fillOpacity: 1.0,
 				    fillColor: '#000',
 				    offset: '5%',
-				    // rotation: parseInt(heading[i]),
 				    anchor: new google.maps.Point(10, 25)
 				};
 
@@ -538,15 +537,24 @@
 					    }]
 					});
 
-					var contentString = '<div class="content">'+
-					       '<p><b>ROUTE</b></p>'+
-	                       '<p><b>Task Id: </b>'+routeOptiTmpPath.taskId+'.</p>'+
-	                       '<p><b>Distance: </b>'+routeOptiTmpPath.distance+' mts.</p>'+
-	                       '<p><b>Approximate Time: </b>'+routeOptiTmpPath.time+' s.</p>'+
+					//routeNormalTmpPath.onclick();
+
+					google.maps.event.addListener(routeOptiTmpPath, "click", function (e) {
+					   var contentString = '<div class="content">'+
+					       '<p><b>Task Id: </b>OPTIMIZATION</p>'+
+	                       '<p><b>Task Id: </b>'+this.taskId+'.</p>'+
+	                       '<p><b>Distance: </b>'+this.distance+' mts.</p>'+
+	                       '<p><b>Approximate Time: </b>'+this.time+' s.</p>'+
                        '</div>';
-				    infowindow.setPosition(routeOptiTmpPath.getPath()[0]);
-				    infowindow.setContent(contentString); //you accidently 
-				    infowindow.open(map);
+					   infowindow.setPosition(e.latLng);
+					   infowindow.setContent(contentString); //you accidently 
+					   infowindow.open(map);
+					   var bounds = new google.maps.LatLngBounds();
+					   this.getPath().forEach(function(latLng){
+				    	  bounds.extend(latLng);
+				       });
+				       map.fitBounds(bounds);
+					});
 
 					routeOptiTmpPath.setMap(map);
                 
